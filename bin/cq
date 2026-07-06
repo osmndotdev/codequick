@@ -108,7 +108,7 @@ cmd_open() {
     fx)  open_cmd="open" ;;
     vsc) open_cmd="code" ;;
     cur) open_cmd="cursor" ;;
-    agy) open_cmd="agy" ;;
+    agy) open_cmd="agy-ide" ;;
     zed) open_cmd="zed" ;;
     *)   print_err "Unknown app/editor: $app. Valid options: fx, vsc, cur, agy, zed"; exit 2 ;;
   esac
