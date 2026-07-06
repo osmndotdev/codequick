@@ -89,6 +89,31 @@ cmd_ls() {
   echo "Copied to clipboard: $selected"
 }
 
+cmd_lookup() {
+  if [[ $# -ne 0 ]]; then
+    echo "Usage: cq lookup" >&2
+    return 1
+  fi
+
+  local link_name real_id
+  local -a rows
+  rows=()
+  while IFS= read -r link_name; do
+    real_id=$(get_real_id_from_link_name "$link_name") || real_id="???"
+    rows+=("$real_id"$'\t\t'"$link_name")
+  done < <(get_sorted_links)
+
+  local selected
+  selected=$(printf '%s\n' "${rows[@]}" | fzf --height=40% --reverse --prompt="Look up project: ") || return 1
+  [[ -z "$selected" ]] && echo "Nothing selected" && return
+
+  real_id="${selected%%$'\t'*}"
+  link_name="${selected##*$'\t'}"
+  record_access "$link_name"
+  echo -n "$real_id" | pbcopy
+  echo "Copied to clipboard: $real_id"
+}
+
 # Internal command used by wrapper. Wrapper handles the `cq cd` command.
 cmd__cd() {
   local selected
@@ -222,6 +247,7 @@ main() {
 
   case "$cmd" in
     ls)        cmd_ls "$@" ;;
+    lookup)    cmd_lookup "$@" ;;
     _cd)       cmd__cd "$@" ;;
     open)      cmd_open "$@" ;;
     mk)        cmd_mk "$@" ;;
@@ -235,6 +261,7 @@ Usage: cq <command> [...args]
 Commands:
   help                                            Show this help message
   ls                                              List projects, copy selection to clipboard
+  lookup                                          List real dir <-> project name mapping, copy selected real dir name
   cd                                              List projects, cd into selected one
   open <fx|vsc|cur|agy|zed>                       List projects, open selected one in app/editor
   mk <PROJECT_NAME>                               Create new project

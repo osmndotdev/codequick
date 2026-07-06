@@ -30,7 +30,6 @@ This preserves Cursor's chat history (which is keyed by directory path) while gi
 ## Installation
 
 1. Ensure you have the required dependencies:
-
    - `zsh`, `pbcopy`, `trash` (standard on macOS)
    - `fzf` (install with `brew install fzf`)
    - `jq` (install with `brew install jq`)
@@ -74,6 +73,14 @@ cq ls
 ```
 
 Opens an interactive fzf menu. Press Enter to copy the selected project name to clipboard.
+
+### Look up a project's real directory name
+
+```bash
+cq lookup
+```
+
+Opens an interactive fzf menu showing an aligned mapping of real directory names to project names (e.g. `cq-a1b2c3d4		my-project`), ordered by last used. Press Enter to copy the selected real directory name to clipboard.
 
 ### Change directory to a project
 
