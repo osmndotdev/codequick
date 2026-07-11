@@ -3,8 +3,8 @@
 # Without this, the script continues even if a command fails. With this, the script stops at the first command that fails.
 set -e
 
-# Base directories
-ROOT_DIR="/Users/osman/aa/code/_cq"
+# Base directories (override the root with the CQ_ROOT environment variable)
+ROOT_DIR="${CQ_ROOT:-$HOME/aa/code/_cq}"
 REALS_DIR="$ROOT_DIR/reals"
 LINKS_DIR="$ROOT_DIR/links"
 

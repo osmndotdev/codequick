@@ -14,7 +14,7 @@ Quick project manager for macOS/Zsh that helps you manage and navigate between p
 
 ## How it Works
 
-Projects are stored in `/Users/osman/aa/code/_cq/`:
+Projects are stored in `~/aa/code/_cq/` by default (override with the `CQ_ROOT` environment variable):
 
 - `reals/` - Contains actual project directories with unique IDs (e.g., `cq-Ab3Xf9G2`)
 - `links/` - Contains symlinks with human-readable names pointing to real directories
@@ -37,7 +37,13 @@ This preserves Cursor's chat history (which is keyed by directory path) while gi
 2. Source the zsh wrapper in your `~/.zshrc`:
 
    ```bash
-   source /Users/osman/aa/code/shell/codequick/contrib/cq.zsh
+   source <path-to-codequick>/contrib/cq.zsh
+   ```
+
+3. Optionally, set `CQ_ROOT` in your `~/.zshrc` to change where projects are stored (defaults to `~/aa/code/_cq`):
+
+   ```bash
+   export CQ_ROOT="$HOME/somewhere/else"
    ```
 
 ## Usage

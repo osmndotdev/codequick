@@ -20,9 +20,9 @@ Secondary benefits:
 ### Directory Structure
 
 ```
-/Users/osman/aa/code/_cq/
-├── reals/          # Actual project directories with unique IDs (e.g., cq-Ab3Xf9G2)
-└── links/          # Symlinks with human-readable names pointing to reals/
+$CQ_ROOT/            # Defaults to ~/aa/code/_cq
+├── reals/           # Actual project directories with unique IDs (e.g., cq-Ab3Xf9G2)
+└── links/           # Symlinks with human-readable names pointing to reals/
 ```
 
 Symlinks use **relative paths** (`../reals/<id>`) to keep the structure portable.
@@ -101,7 +101,7 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 
 ### Testing Changes
 
-Don't test changes by running commands directly. Instead, ask the user to manually test the changes.
+Don't test changes against the user's real projects. Instead, set `CQ_ROOT` to a temporary directory and run commands against that sandbox (interactive fzf commands still need manual testing by the user).
 
 ### Code Style
 
