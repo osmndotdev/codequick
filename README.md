@@ -136,7 +136,7 @@ Prints the absolute path of the real directory for `my-project`. Useful for inte
 cq rm my-project
 ```
 
-Moves both the symlink and the real directory to the macOS Trash.
+Asks for confirmation, then moves both the symlink and the real directory to the macOS Trash.
 
 ## Known Issues
 

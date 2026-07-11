@@ -97,7 +97,7 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 | `cp`     | `cmd_cp`                | Copies project with suffix (creates `<name>__<suffix>`)                           |
 | `rename` | `cmd_rename`            | Renames symlink only, updates window title                                        |
 | `path`   | `cmd_path`              | Outputs real path for a project                                                   |
-| `rm`     | `cmd_rm`                | Moves project and symlink to Trash                                                |
+| `rm`     | `cmd_rm`                | Moves project and symlink to Trash (after y/N confirmation)                       |
 
 ## Development Notes
 

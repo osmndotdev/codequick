@@ -126,8 +126,13 @@ assert_status "ls usage error" $? 2
 assert_status "_cd non-matching name falls through to fzf" $? 1
 
 # -- rm --
-"$CQ" rm renamed-again >/dev/null 2>&1
-assert_status "rm" $? 0
+echo n | "$CQ" rm renamed-again >/dev/null 2>&1
+assert_status "rm declined" $? 1
+assert_exists "rm declined keeps link" "$CQ_ROOT/links/renamed-again"
+"$CQ" rm renamed-again </dev/null >/dev/null 2>&1
+assert_status "rm with no input aborts" $? 1
+echo y | "$CQ" rm renamed-again >/dev/null 2>&1
+assert_status "rm confirmed" $? 0
 assert_gone "rm removes link" "$CQ_ROOT/links/renamed-again"
 assert_gone "rm removes real dir" "$copy_real"
 assert_exists "rm trashes real dir" "$TRASHED/$(basename "$copy_real")"

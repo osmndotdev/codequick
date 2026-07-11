@@ -313,6 +313,14 @@ cmd_rm() {
   real_path="$REALS_DIR/$real_id"
   if [[ ! -d "$real_path" ]]; then print_err "Real dir missing: $real_path"; exit 1; fi
 
+  local reply
+  echo -n "Move '$link_name' ($real_id) to Trash? [y/N] "
+  read -r reply || reply=""
+  if [[ "$reply" != [yY] ]]; then
+    echo "Aborted"
+    return 1
+  fi
+
   # This ain' no atomic, cuz I ain' no nuclear engineer.
   # (jk I just don't care about this project that much)
   trash "$real_path" || { print_err "Failed to trash real dir"; exit 1; }
