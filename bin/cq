@@ -102,13 +102,16 @@ set_window_title() {
 
 cmd_ls() {
   if [[ $# -gt 1 ]]; then
-    echo "Usage: cq ls [PROJECT_NAME]" >&2
-    return 1
+    print_err "Usage: cq ls [PROJECT_NAME]"
+    exit 2
   fi
 
   local selected
   selected=$(select_link "Select project: " "${1:-}") || return 1
-  [[ -z "$selected" ]] && echo "Nothing selected" && return
+  if [[ -z "$selected" ]]; then
+    echo "Nothing selected"
+    return 0
+  fi
 
   record_access "$selected"
   echo -n "$selected" | pbcopy
@@ -117,8 +120,8 @@ cmd_ls() {
 
 cmd_lookup() {
   if [[ $# -gt 1 ]]; then
-    echo "Usage: cq lookup [PROJECT_NAME]" >&2
-    return 1
+    print_err "Usage: cq lookup [PROJECT_NAME]"
+    exit 2
   fi
 
   local query="${1:-}"
@@ -141,7 +144,10 @@ cmd_lookup() {
 
     local selected
     selected=$(printf '%s\n' "${rows[@]}" | fzf "${fzf_args[@]}") || return 1
-    [[ -z "$selected" ]] && echo "Nothing selected" && return
+    if [[ -z "$selected" ]]; then
+      echo "Nothing selected"
+      return 0
+    fi
 
     real_id="${selected%%$'\t'*}"
     link_name="${selected##*$'\t'}"
@@ -158,7 +164,10 @@ cmd__cd() {
   selected=$(select_link "cd into project: " "${1:-}") || return 1
   # stdout is the data channel here (the wrapper cds into whatever we print),
   # so user-facing messages must go to stderr.
-  [[ -z "$selected" ]] && echo "Nothing selected" >&2 && return
+  if [[ -z "$selected" ]]; then
+    echo "Nothing selected" >&2
+    return 0
+  fi
 
   record_access "$selected"
   echo "$LINKS_DIR/$selected"
@@ -180,7 +189,10 @@ cmd_open() {
 
   local selected
   selected=$(select_link "Open project in app/editor: " "${2:-}") || return 1
-  [[ -z "$selected" ]] && echo "Nothing selected" && return
+  if [[ -z "$selected" ]]; then
+    echo "Nothing selected"
+    return 0
+  fi
 
   record_access "$selected"
   local real_path
