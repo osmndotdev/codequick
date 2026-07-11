@@ -11,6 +11,17 @@ LINKS_DIR="$ROOT_DIR/links"
 # Ensure base directories exist
 mkdir -p "$REALS_DIR" "$LINKS_DIR"
 
+# App/editor aliases for `cq open`. To support a new app, just add it here;
+# usage, help, and error messages derive from this table.
+typeset -A OPEN_APPS
+OPEN_APPS=(
+  fx  open     # Finder
+  vsc code     # Visual Studio Code
+  cur cursor   # Cursor
+  agy agy-ide  # Antigravity
+  zed zed      # Zed
+)
+
 print_err() { echo "\033[31m$*\033[0m" 1>&2; }
 
 require_arg() {
@@ -174,18 +185,16 @@ cmd__cd() {
 }
 
 cmd_open() {
+  local -a app_keys; app_keys=(${(ok)OPEN_APPS})
+  local apps="${(j:|:)app_keys}"
   local app="$1"
-  require_arg "$app" "Missing app/editor. Usage: cq open <fx|vsc|cur|agy|zed> [PROJECT_NAME]"
+  require_arg "$app" "Missing app/editor. Usage: cq open <$apps> [PROJECT_NAME]"
 
-  local open_cmd
-  case "$app" in
-    fx)  open_cmd="open" ;;
-    vsc) open_cmd="code" ;;
-    cur) open_cmd="cursor" ;;
-    agy) open_cmd="agy-ide" ;;
-    zed) open_cmd="zed" ;;
-    *)   print_err "Unknown app/editor: $app. Valid options: fx, vsc, cur, agy, zed"; exit 2 ;;
-  esac
+  local open_cmd="${OPEN_APPS[$app]:-}"
+  if [[ -z "$open_cmd" ]]; then
+    print_err "Unknown app/editor: $app. Valid options: $apps"
+    exit 2
+  fi
 
   local selected
   selected=$(select_link "Open project in app/editor: " "${2:-}") || return 1
@@ -308,6 +317,8 @@ main() {
     path)      cmd_path "$@" ;;
     rm)        cmd_rm "$@" ;;
     ""|help|-h|--help)
+      local -a app_keys; app_keys=(${(ok)OPEN_APPS})
+      local apps="${(j:|:)app_keys}"
       cat <<EOF
 Usage: cq <command> [...args]
 Commands:
@@ -315,7 +326,7 @@ Commands:
   ls [PROJECT_NAME]                               List projects, copy selection to clipboard
   lookup [PROJECT_NAME]                           List real dir <-> project name mapping, copy selected real dir name
   cd [PROJECT_NAME]                               List projects, cd into selected one
-  open <fx|vsc|cur|agy|zed> [PROJECT_NAME]        List projects, open selected one in app/editor
+  open <$apps> [PROJECT_NAME]        List projects, open selected one in app/editor
   mk <PROJECT_NAME>                               Create new project
   cp <OLD_PROJECT_NAME> <NEW_PROJECT_SUFFIX>      Create a copy of an existing project
   rename <OLD_PROJECT_NAME> <NEW_PROJECT_NAME>    Rename a project

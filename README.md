@@ -102,15 +102,15 @@ _Requires the zsh wrapper to be loaded._
 ### Open a project in an app/editor
 
 ```bash
-cq open <fx|vsc|cur|agy|zed> [project-name]
+cq open <agy|cur|fx|vsc|zed> [project-name]
 ```
 
 Opens an interactive fzf menu and launches the selected project in the specified app/editor:
 
+- `agy` - Antigravity
+- `cur` - Cursor
 - `fx` - Finder (macOS file explorer)
 - `vsc` - Visual Studio Code
-- `cur` - Cursor
-- `agy` - Antigravity
 - `zed` - Zed
 
 ### Get project path

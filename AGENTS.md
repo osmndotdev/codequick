@@ -107,6 +107,8 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 3. Add help text to the heredoc in the help case
 4. If the command needs shell integration (like `cd`), update `contrib/cq.zsh`
 
+To support a new app/editor in `cq open`, add a single entry to the `OPEN_APPS` table at the top of `bin/cq` — usage, help, and error messages derive from it (also document the alias in README).
+
 ### Testing Changes
 
 Don't test changes against the user's real projects. Run `zsh test/smoke.zsh` — it exercises the non-interactive command paths against a throwaway `CQ_ROOT` with `pbcopy`/`trash`/`fzf` stubbed out. For ad-hoc testing, set `CQ_ROOT` to a temporary directory yourself. Interactive fzf flows still need manual testing by the user — never invoke fzf paths from automation (they hang waiting for the terminal).
