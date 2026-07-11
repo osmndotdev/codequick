@@ -49,6 +49,7 @@ Symlinks use **relative paths** (`../reals/<id>`) to keep the structure portable
 | ---------------- | --------------------------------------------------- |
 | `bin/cq`         | Main executable (Zsh script)                        |
 | `contrib/cq.zsh` | Zsh wrapper for shell integration (enables `cq cd`) |
+| `test/smoke.zsh` | Smoke test (sandboxed CQ_ROOT, stubbed deps)        |
 | `README.md`      | User documentation                                  |
 
 ## Key Implementation Details
@@ -108,7 +109,7 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 
 ### Testing Changes
 
-Don't test changes against the user's real projects. Instead, set `CQ_ROOT` to a temporary directory and run commands against that sandbox (interactive fzf commands still need manual testing by the user).
+Don't test changes against the user's real projects. Run `zsh test/smoke.zsh` — it exercises the non-interactive command paths against a throwaway `CQ_ROOT` with `pbcopy`/`trash`/`fzf` stubbed out. For ad-hoc testing, set `CQ_ROOT` to a temporary directory yourself. Interactive fzf flows still need manual testing by the user — never invoke fzf paths from automation (they hang waiting for the terminal).
 
 ### Code Style
 
