@@ -1,16 +1,18 @@
 # CodeQuick
 
-Quick project manager for macOS/Zsh that helps you manage and navigate between projects.
+Quick project manager for macOS/Zsh that helps you manage and navigate between projects. Its core trick: project directories keep constant, randomized names while you rename the human-facing names freely — so IDE state that is keyed by directory path (like Cursor's chat history) survives renames.
 
 ## Features
 
 - Create, copy, rename, and remove projects
-- Quick project navigation with fuzzy finding
+- Rename projects without breaking IDE state (e.g. Cursor chat history)
+- Quick project navigation with fuzzy finding, ordered by last use
+- Pass a project name directly to skip the menu
 - Open projects in your preferred app/editor
 - Automatic window title management for VSCode-based editors
 - Projects stored in a centralized location with clean symlinks
 - Clipboard integration for project names
-- macOS Trash integration for safe deletion
+- macOS Trash integration and confirmation prompt for safe deletion
 
 ## How it Works
 
@@ -19,7 +21,7 @@ Projects are stored in `~/aa/code/_cq/` by default (override with the `CQ_ROOT` 
 - `reals/` - Contains actual project directories with unique IDs (e.g., `cq-Ab3Xf9G2`)
 - `links/` - Contains symlinks with human-readable names pointing to real directories
 
-Link names are automatically sanitized to kebab-case (lowercase, hyphens only).
+Link names are automatically sanitized to kebab-case (lowercase, hyphens only). Selection menus list projects by last use, newest first.
 
 ### Window Title Management
 
@@ -137,6 +139,16 @@ cq rm my-project
 ```
 
 Asks for confirmation, then moves both the symlink and the real directory to the macOS Trash.
+
+## Development
+
+Run the smoke test before committing changes:
+
+```bash
+zsh test/smoke.zsh
+```
+
+It exercises the non-interactive command paths against a throwaway `CQ_ROOT`, with `pbcopy`/`trash`/`fzf` stubbed out. See `AGENTS.md` for architecture notes and conventions.
 
 ## Known Issues
 
