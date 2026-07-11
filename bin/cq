@@ -46,8 +46,11 @@ sanitize_name() {
   echo "$name" | tr '[:upper:]' '[:lower:]' | tr ' _' '-' | sed 's/[^a-z0-9-]//g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//'
 }
 
+# Newest modification time first; record_access bumps a link's timestamp.
+# ls skips dotfiles by default, and the links dir always exists (mkdir -p
+# above), so no filtering or fallback is needed.
 get_sorted_links() {
-  ls -1t "$LINKS_DIR" 2>/dev/null | grep -v '^\.' || ls -1 "$LINKS_DIR" 2>/dev/null
+  ls -1t "$LINKS_DIR"
 }
 
 record_access() {
