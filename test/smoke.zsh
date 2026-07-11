@@ -47,13 +47,14 @@ assert_gone() {  # label path
 }
 
 # -- mk --
-"$CQ" mk "My Test Project" >/dev/null 2>&1
+mk_out=$("$CQ" mk "My Test Project" 2>/dev/null)
 assert_status "mk" $? 0
 assert_exists "mk creates link" "$CQ_ROOT/links/my-test-project"
 if [[ -L "$CQ_ROOT/links/my-test-project" ]]; then pass; else fail "mk link is a symlink"; fi
 
 real=$("$CQ" path my-test-project)
 assert_status "path" $? 0
+assert_eq "mk prints real path on last line" "${mk_out##*$'\n'}" "$real"
 if [[ -d "$real" ]]; then pass; else fail "real dir exists: $real"; fi
 assert_eq "mk sets window title" \
   "$(jq -r '."window.title"' "$real/.vscode/settings.json")" "my-test-project"
@@ -64,6 +65,14 @@ assert_status "mk duplicate rejected" $? 1
 assert_status "mk unsanitizable name rejected" $? 2
 "$CQ" mk >/dev/null 2>&1
 assert_status "mk missing arg rejected" $? 2
+
+# -- mkcd (internal _mkcd; the wrapper cds into what it prints) --
+mkcd_out=$("$CQ" _mkcd "CD Target" 2>/dev/null)
+assert_status "_mkcd" $? 0
+assert_eq "_mkcd prints link path" "$mkcd_out" "$CQ_ROOT/links/cd-target"
+assert_exists "_mkcd creates link" "$CQ_ROOT/links/cd-target"
+"$CQ" _mkcd >/dev/null 2>&1
+assert_status "_mkcd missing arg rejected" $? 2
 
 # -- path --
 "$CQ" path nonexistent >/dev/null 2>&1

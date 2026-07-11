@@ -217,9 +217,11 @@ cmd_path() {
   get_real_path_from_link_name "$link_name"
 }
 
-cmd_mk() {
-  local link_name_raw="$1"
-  require_arg "$link_name_raw" "Missing project name. Usage: cq mk <PROJECT_NAME>"
+# Shared by mk and _mkcd. Prints the sanitized link name on stdout;
+# all diagnostics go to stderr.
+create_project() {
+  local link_name_raw="$1"; local usage="$2"
+  require_arg "$link_name_raw" "$usage"
 
   local link_name
   link_name=$(sanitize_name "$link_name_raw")
@@ -232,8 +234,27 @@ cmd_mk() {
   real_id=$(basename "$real_path")
   ln -s "../reals/$real_id" "$LINKS_DIR/$link_name" || { print_err "Failed to create symlink"; exit 1; }
   set_window_title "$real_path" "$link_name"
-  
+
+  echo "$link_name"
+}
+
+cmd_mk() {
+  local link_name
+  link_name=$(create_project "${1:-}" "Missing project name. Usage: cq mk <PROJECT_NAME>")
+
   echo "Created project: $link_name"
+  get_real_path_from_link_name "$link_name"
+}
+
+# Internal command used by wrapper. Wrapper handles the `cq mkcd` command.
+cmd__mkcd() {
+  local link_name
+  link_name=$(create_project "${1:-}" "Missing project name. Usage: cq mkcd <PROJECT_NAME>")
+
+  # stdout is the data channel here (the wrapper cds into whatever we print),
+  # so user-facing messages must go to stderr.
+  echo "Created project: $link_name" >&2
+  echo "$LINKS_DIR/$link_name"
 }
 
 cmd_cp() {
@@ -312,6 +333,7 @@ main() {
     _cd)       cmd__cd "$@" ;;
     open)      cmd_open "$@" ;;
     mk)        cmd_mk "$@" ;;
+    _mkcd)     cmd__mkcd "$@" ;;
     cp)        cmd_cp "$@" ;;
     rename)    cmd_rename "$@" ;;
     path)      cmd_path "$@" ;;
@@ -327,7 +349,8 @@ Commands:
   lookup [PROJECT_NAME]                           List real dir <-> project name mapping, copy selected real dir name
   cd [PROJECT_NAME]                               List projects, cd into selected one
   open <$apps> [PROJECT_NAME]        List projects, open selected one in app/editor
-  mk <PROJECT_NAME>                               Create new project
+  mk <PROJECT_NAME>                               Create new project, print its path
+  mkcd <PROJECT_NAME>                             Create new project and cd into it
   cp <OLD_PROJECT_NAME> <NEW_PROJECT_SUFFIX>      Create a copy of an existing project
   rename <OLD_PROJECT_NAME> <NEW_PROJECT_NAME>    Rename a project
   path <PROJECT_NAME>                             Print absolute path of project
@@ -335,6 +358,7 @@ Commands:
 
 An optional PROJECT_NAME that matches exactly skips the menu; otherwise it
 prefills the fuzzy search (auto-selecting when only one project matches).
+The cd and mkcd commands require the zsh wrapper (contrib/cq.zsh).
 EOF
       ;;
     *) print_err "Unknown command: $cmd"; exit 2 ;;

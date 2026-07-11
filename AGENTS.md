@@ -60,7 +60,7 @@ The selection commands (`ls`, `lookup`, `cd`, `open`) accept an optional project
 
 ### Why the Zsh Wrapper Exists
 
-The `cq cd` command needs to change the **calling shell's** working directory. Since a subprocess cannot change its parent's working directory, the wrapper function intercepts `cq cd`, calls the internal `cq _cd` command to get the path, then uses `builtin cd` to change directories within the same shell process.
+The `cq cd` and `cq mkcd` commands need to change the **calling shell's** working directory. Since a subprocess cannot change its parent's working directory, the wrapper function intercepts them, calls the internal `cq _cd`/`cq _mkcd` command to get the path, then uses `builtin cd` to change directories within the same shell process.
 
 ### Unique Directory Names
 
@@ -92,7 +92,8 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 | `lookup` | `cmd_lookup`            | Interactive fzf selection, copies real dir name to clipboard                      |
 | `cd`     | `cmd__cd` (via wrapper) | Interactive fzf selection, changes directory                                      |
 | `open`   | `cmd_open`              | Interactive fzf selection, opens in specified app/editor (fx\|vsc\|cur\|agy\|zed) |
-| `mk`     | `cmd_mk`                | Creates new project                                                               |
+| `mk`     | `cmd_mk`                | Creates new project, prints its real path                                        |
+| `mkcd`   | `cmd__mkcd` (via wrapper) | Creates new project, changes directory into it                                 |
 | `cp`     | `cmd_cp`                | Copies project with suffix (creates `<name>__<suffix>`)                           |
 | `rename` | `cmd_rename`            | Renames symlink only, updates window title                                        |
 | `path`   | `cmd_path`              | Outputs real path for a project                                                   |

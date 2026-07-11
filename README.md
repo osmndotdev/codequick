@@ -56,7 +56,16 @@ For `ls`, `lookup`, `cd`, and `open`, the optional `project-name` argument skips
 cq mk my-project
 ```
 
-Creates a new project with a unique real directory and a symlink named `my-project`.
+Creates a new project with a unique real directory and a symlink named `my-project`, and prints the real directory's path (so you can e.g. `cd "$(cq mk my-project | tail -1)"`).
+
+### Create a new project and cd into it
+
+```bash
+cq mkcd my-project
+```
+
+Creates a new project and changes your shell's working directory to it.
+_Requires the zsh wrapper to be loaded._
 
 ### Copy an existing project
 
