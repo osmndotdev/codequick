@@ -118,7 +118,9 @@ cmd_lookup() {
 cmd__cd() {
   local selected
   selected=$(get_sorted_links | fzf --height=40% --reverse --prompt="cd into project: ") || return 1
-  [[ -z "$selected" ]] && echo "Nothing selected" && return
+  # stdout is the data channel here (the wrapper cds into whatever we print),
+  # so user-facing messages must go to stderr.
+  [[ -z "$selected" ]] && echo "Nothing selected" >&2 && return
 
   record_access "$selected"
   echo "$LINKS_DIR/$selected"
