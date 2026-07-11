@@ -48,6 +48,8 @@ This preserves Cursor's chat history (which is keyed by directory path) while gi
 
 ## Usage
 
+For `ls`, `lookup`, `cd`, and `open`, the optional `project-name` argument skips the fzf menu when it matches a project exactly; otherwise it prefills the fuzzy search (auto-selecting when only one project matches).
+
 ### Create a new project
 
 ```bash
@@ -75,7 +77,7 @@ Renames the symlink (the real directory remains unchanged).
 ### List and select projects
 
 ```bash
-cq ls
+cq ls [project-name]
 ```
 
 Opens an interactive fzf menu. Press Enter to copy the selected project name to clipboard.
@@ -83,7 +85,7 @@ Opens an interactive fzf menu. Press Enter to copy the selected project name to 
 ### Look up a project's real directory name
 
 ```bash
-cq lookup
+cq lookup [project-name]
 ```
 
 Opens an interactive fzf menu showing an aligned mapping of real directory names to project names (e.g. `cq-a1b2c3d4		my-project`), ordered by last used. Press Enter to copy the selected real directory name to clipboard.
@@ -91,7 +93,7 @@ Opens an interactive fzf menu showing an aligned mapping of real directory names
 ### Change directory to a project
 
 ```bash
-cq cd
+cq cd [project-name]
 ```
 
 Opens an interactive fzf menu and changes your shell's working directory to the selected project.
@@ -100,7 +102,7 @@ _Requires the zsh wrapper to be loaded._
 ### Open a project in an app/editor
 
 ```bash
-cq open <fx|vsc|cur|agy|zed>
+cq open <fx|vsc|cur|agy|zed> [project-name]
 ```
 
 Opens an interactive fzf menu and launches the selected project in the specified app/editor:

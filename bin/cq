@@ -54,6 +54,23 @@ record_access() {
   touch -h "$LINKS_DIR/$1" 2>/dev/null || true
 }
 
+# Select a link name. An exact match on $2 skips fzf entirely; a partial
+# name prefills fzf's search (auto-selecting when only one link matches).
+select_link() {
+  local prompt="$1"
+  local query="${2:-}"
+
+  if [[ -n "$query" ]] && link_exists "$query"; then
+    echo "$query"
+    return 0
+  fi
+
+  local -a fzf_args
+  fzf_args=(--height=40% --reverse --prompt="$prompt")
+  [[ -n "$query" ]] && fzf_args+=(--query="$query" --select-1)
+  get_sorted_links | fzf "${fzf_args[@]}"
+}
+
 set_window_title() {
   local real_path="$1"
   local link_name="$2"
@@ -81,13 +98,13 @@ set_window_title() {
 # == COMMANDS BEGIN ==
 
 cmd_ls() {
-  if [[ $# -ne 0 ]]; then
-    echo "Usage: cq ls" >&2
+  if [[ $# -gt 1 ]]; then
+    echo "Usage: cq ls [PROJECT_NAME]" >&2
     return 1
   fi
 
   local selected
-  selected=$(get_sorted_links | fzf --height=40% --reverse --prompt="Select project: ") || return 1
+  selected=$(select_link "Select project: " "${1:-}") || return 1
   [[ -z "$selected" ]] && echo "Nothing selected" && return
 
   record_access "$selected"
@@ -96,25 +113,37 @@ cmd_ls() {
 }
 
 cmd_lookup() {
-  if [[ $# -ne 0 ]]; then
-    echo "Usage: cq lookup" >&2
+  if [[ $# -gt 1 ]]; then
+    echo "Usage: cq lookup [PROJECT_NAME]" >&2
     return 1
   fi
 
+  local query="${1:-}"
   local link_name real_id
-  local -a rows
-  rows=()
-  while IFS= read -r link_name; do
-    real_id=$(get_real_id_from_link_name "$link_name") || real_id="???"
-    rows+=("$real_id"$'\t\t'"$link_name")
-  done < <(get_sorted_links)
 
-  local selected
-  selected=$(printf '%s\n' "${rows[@]}" | fzf --height=40% --reverse --prompt="Look up project: ") || return 1
-  [[ -z "$selected" ]] && echo "Nothing selected" && return
+  if [[ -n "$query" ]] && link_exists "$query"; then
+    link_name="$query"
+    real_id=$(get_real_id_from_link_name "$link_name") || { print_err "Failed to resolve real dir"; exit 1; }
+  else
+    local -a rows
+    rows=()
+    while IFS= read -r link_name; do
+      real_id=$(get_real_id_from_link_name "$link_name") || real_id="???"
+      rows+=("$real_id"$'\t\t'"$link_name")
+    done < <(get_sorted_links)
 
-  real_id="${selected%%$'\t'*}"
-  link_name="${selected##*$'\t'}"
+    local -a fzf_args
+    fzf_args=(--height=40% --reverse --prompt="Look up project: ")
+    [[ -n "$query" ]] && fzf_args+=(--query="$query" --select-1)
+
+    local selected
+    selected=$(printf '%s\n' "${rows[@]}" | fzf "${fzf_args[@]}") || return 1
+    [[ -z "$selected" ]] && echo "Nothing selected" && return
+
+    real_id="${selected%%$'\t'*}"
+    link_name="${selected##*$'\t'}"
+  fi
+
   record_access "$link_name"
   echo -n "$real_id" | pbcopy
   echo "Copied to clipboard: $real_id"
@@ -123,7 +152,7 @@ cmd_lookup() {
 # Internal command used by wrapper. Wrapper handles the `cq cd` command.
 cmd__cd() {
   local selected
-  selected=$(get_sorted_links | fzf --height=40% --reverse --prompt="cd into project: ") || return 1
+  selected=$(select_link "cd into project: " "${1:-}") || return 1
   # stdout is the data channel here (the wrapper cds into whatever we print),
   # so user-facing messages must go to stderr.
   [[ -z "$selected" ]] && echo "Nothing selected" >&2 && return
@@ -134,7 +163,7 @@ cmd__cd() {
 
 cmd_open() {
   local app="$1"
-  require_arg "$app" "Missing app/editor. Usage: cq open <fx|vsc|cur|agy|zed>"
+  require_arg "$app" "Missing app/editor. Usage: cq open <fx|vsc|cur|agy|zed> [PROJECT_NAME]"
 
   local open_cmd
   case "$app" in
@@ -147,7 +176,7 @@ cmd_open() {
   esac
 
   local selected
-  selected=$(get_sorted_links | fzf --height=40% --reverse --prompt="Open project in app/editor: ") || return 1
+  selected=$(select_link "Open project in app/editor: " "${2:-}") || return 1
   [[ -z "$selected" ]] && echo "Nothing selected" && return
 
   record_access "$selected"
@@ -268,15 +297,18 @@ main() {
 Usage: cq <command> [...args]
 Commands:
   help                                            Show this help message
-  ls                                              List projects, copy selection to clipboard
-  lookup                                          List real dir <-> project name mapping, copy selected real dir name
-  cd                                              List projects, cd into selected one
-  open <fx|vsc|cur|agy|zed>                       List projects, open selected one in app/editor
+  ls [PROJECT_NAME]                               List projects, copy selection to clipboard
+  lookup [PROJECT_NAME]                           List real dir <-> project name mapping, copy selected real dir name
+  cd [PROJECT_NAME]                               List projects, cd into selected one
+  open <fx|vsc|cur|agy|zed> [PROJECT_NAME]        List projects, open selected one in app/editor
   mk <PROJECT_NAME>                               Create new project
   cp <OLD_PROJECT_NAME> <NEW_PROJECT_SUFFIX>      Create a copy of an existing project
   rename <OLD_PROJECT_NAME> <NEW_PROJECT_NAME>    Rename a project
   path <PROJECT_NAME>                             Print absolute path of project
   rm <PROJECT_NAME>                               Move project to Trash
+
+An optional PROJECT_NAME that matches exactly skips the menu; otherwise it
+prefills the fuzzy search (auto-selecting when only one project matches).
 EOF
       ;;
     *) print_err "Unknown command: $cmd"; exit 2 ;;
