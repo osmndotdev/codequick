@@ -63,9 +63,15 @@ set_window_title() {
   mkdir -p "$settings_dir"
   
   if [[ -f "$settings_file" ]]; then
-    # Merge with existing settings
-    jq --arg title "$link_name" '. + {"window.title": $title}' "$settings_file" > "$settings_file.tmp" \
-      && mv "$settings_file.tmp" "$settings_file"
+    # Merge with existing settings. jq fails on JSONC (comments etc.); the
+    # title is cosmetic, so warn and continue instead of aborting the command.
+    if jq --arg title "$link_name" '. + {"window.title": $title}' "$settings_file" > "$settings_file.tmp" 2>/dev/null; then
+      mv "$settings_file.tmp" "$settings_file"
+    else
+      rm -f "$settings_file.tmp"
+      print_err "Warning: could not update $settings_file (not valid JSON, e.g. contains comments)."
+      print_err "Set \"window.title\" to \"$link_name\" manually if desired."
+    fi
   else
     # Create new settings file
     jq -n --arg title "$link_name" '{"window.title": $title}' > "$settings_file"

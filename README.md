@@ -129,4 +129,4 @@ Moves both the symlink and the real directory to the macOS Trash.
 
 ## Known Issues
 
-- When renaming a project, if the `.vscode/settings.json` file has comments in it, the `jq` command will fail to parse the file and the file will not be updated. If you see the error, you can manually update the window title and delete the empty `.vscode/settings.json.tmp` file.
+- If the `.vscode/settings.json` file has comments in it (JSONC), `jq` cannot parse it, so the window title is not updated automatically. CodeQuick prints a warning and continues; update `window.title` manually if desired.
