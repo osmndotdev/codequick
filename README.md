@@ -77,6 +77,8 @@ cq cp my-project backup
 
 Creates a copy of `my-project` named `my-project__backup`.
 
+> **Warning:** You might have problems if the project's tooling relies on the path staying the same. For example, Turbopack's dev cache (located in `dist/dev/cache/turbopack`) doesn't automatically refresh the cached paths and needs to be manually cleared on the new copy to be regenerated. Since CodeQuick is tool-agnostic, it's up to you to ensure your tooling can handle the path change and regenerate artifacts properly.
+
 ### Rename a project
 
 ```bash
