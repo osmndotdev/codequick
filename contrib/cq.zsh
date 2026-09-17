@@ -1,5 +1,6 @@
 # CodeQuick Zsh wrapper
-# Add this to your .zshrc to enable 'cq cd' to change your shell's working directory:
+# Add this to your .zshrc to enable 'cq cd' (changes your shell's working
+# directory) and 'cq open cc' (calls your 'cc' shell function):
 # source <path-to-codequick>/contrib/cq.zsh
 
 # Resolve the cq binary relative to this file's location ($0 is the sourced
@@ -17,6 +18,23 @@ cq() {
     destination="$($_CQ_BIN "$subcmd" "$@")" || return
     if [[ -n "$destination" ]]; then
       builtin cd "$destination"
+    fi
+    return
+  fi
+
+  # `cc` is a shell function (see the Claude Code section of the README), so
+  # a subprocess can't call it: _open_cc prints the project's real path and
+  # we hand it to `cc` here.
+  if [[ "$1" == open && "$2" == cc ]]; then
+    shift 2
+    if ! (( $+functions[cc] )); then
+      print -u2 "cq open cc: no 'cc' shell function defined"
+      return 1
+    fi
+    local real_path
+    real_path="$($_CQ_BIN _open_cc "$@")" || return
+    if [[ -n "$real_path" ]]; then
+      cc "$real_path"
     fi
     return
   fi

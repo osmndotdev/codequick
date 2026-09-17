@@ -117,6 +117,19 @@ assert_status "lookup with exact name" $? 0
 assert_eq "lookup copies real id" "$(cat "$CLIPBOARD")" "$(basename "$real")"
 assert_eq "_cd prints link path" \
   "$("$CQ" _cd my-test-project 2>/dev/null)" "$CQ_ROOT/links/my-test-project"
+assert_eq "_open_cc prints real path" \
+  "$("$CQ" _open_cc my-test-project 2>/dev/null)" "$real"
+"$CQ" open cc my-test-project >/dev/null 2>&1
+assert_status "open cc without wrapper rejected" $? 2
+
+# -- wrapper: open cc hands the real path to the caller's cc function --
+source "$SCRIPT_DIR/../contrib/cq.zsh"
+cc() { print -r -- "cc called with: $1"; }
+assert_eq "wrapper open cc calls cc with real path" \
+  "$(cq open cc my-test-project 2>/dev/null)" "cc called with: $real"
+unfunction cc
+cq open cc my-test-project >/dev/null 2>&1
+assert_status "wrapper open cc without cc function rejected" $? 1
 
 "$CQ" ls a b >/dev/null 2>&1
 assert_status "ls usage error" $? 2

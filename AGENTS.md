@@ -48,7 +48,7 @@ Symlinks use **relative paths** (`../reals/<id>`) to keep the structure portable
 | File             | Purpose                                             |
 | ---------------- | --------------------------------------------------- |
 | `bin/cq`         | Main executable (Zsh script)                        |
-| `contrib/cq.zsh` | Zsh wrapper for shell integration (enables `cq cd`) |
+| `contrib/cq.zsh` | Zsh wrapper for shell integration (`cq cd`, `cq open cc`) |
 | `test/smoke.zsh` | Smoke test (sandboxed CQ_ROOT, stubbed deps)        |
 | `README.md`      | User documentation                                  |
 
@@ -61,6 +61,8 @@ The selection commands (`ls`, `lookup`, `cd`, `open`) accept an optional project
 ### Why the Zsh Wrapper Exists
 
 The `cq cd` and `cq mkcd` commands need to change the **calling shell's** working directory. Since a subprocess cannot change its parent's working directory, the wrapper function intercepts them, calls the internal `cq _cd`/`cq _mkcd` command to get the path, then uses `builtin cd` to change directories within the same shell process.
+
+`cq open cc` follows the same pattern for a different reason: Claude Code is launched by a user-defined `cc` shell function (not an executable), which a subprocess can't see. The wrapper calls the internal `cq _open_cc` to select the project and get its real path, then calls `cc "$real_path"` in the same shell. Running `open cc` against `bin/cq` directly is a usage error.
 
 ### Unique Directory Names
 
@@ -92,6 +94,7 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 | `lookup` | `cmd_lookup`            | Interactive fzf selection, copies real dir name to clipboard                      |
 | `cd`     | `cmd__cd` (via wrapper) | Interactive fzf selection, changes directory                                      |
 | `open`   | `cmd_open`              | Interactive fzf selection, opens in specified app/editor (fx\|vsc\|cur\|agy\|zed) |
+| `open cc` | `cmd__open_cc` (via wrapper) | Interactive fzf selection, passes real path to the user's `cc` shell function |
 | `mk`     | `cmd_mk`                | Creates new project, prints its real path                                        |
 | `mkcd`   | `cmd__mkcd` (via wrapper) | Creates new project, changes directory into it                                 |
 | `cp`     | `cmd_cp`                | Copies project with suffix (creates `<name>__<suffix>`)                           |
@@ -108,7 +111,7 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 3. Add help text to the heredoc in the help case
 4. If the command needs shell integration (like `cd`), update `contrib/cq.zsh`
 
-To support a new app/editor in `cq open`, add a single entry to the `OPEN_APPS` table at the top of `bin/cq` — usage, help, and error messages derive from it (also document the alias in README).
+To support a new app/editor in `cq open`, add a single entry to the `OPEN_APPS` table at the top of `bin/cq` — usage, help, and error messages derive from it (also document the alias in README). The `cc` entry is the exception: it is listed there for usage/help only and is dispatched by the wrapper.
 
 ### Testing Changes
 

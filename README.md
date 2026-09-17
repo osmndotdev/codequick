@@ -115,16 +115,29 @@ _Requires the zsh wrapper to be loaded._
 ### Open a project in an app/editor
 
 ```bash
-cq open <agy|cur|fx|vsc|zed> [project-name]
+cq open <agy|cc|cur|fx|vsc|zed> [project-name]
 ```
 
 Opens an interactive fzf menu and launches the selected project in the specified app/editor:
 
 - `agy` - Antigravity
+- `cc` - Claude Code desktop app (see below)
 - `cur` - Cursor
 - `fx` - Finder (macOS file explorer)
 - `vsc` - Visual Studio Code
 - `zed` - Zed
+
+#### Claude Code
+
+`cq open cc` calls a `cc` shell function with the project's real directory instead of running an executable, so you can keep your own way of launching Claude Code. Define one like this in your `~/.zshrc` (before or after sourcing the wrapper):
+
+```bash
+cc() {
+  open "claude://code/new?folder=$(printf '%s' "${1:A}" | jq -sRr @uri)"
+}
+```
+
+_Requires the zsh wrapper to be loaded._
 
 ### Get project path
 
