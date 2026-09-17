@@ -7,6 +7,7 @@ Quick project manager for macOS/Zsh that helps you manage and navigate between p
 - Create, copy, rename, and remove projects
 - Rename projects without breaking IDE state (e.g. Cursor chat history)
 - Quick project navigation with fuzzy finding, ordered by last use
+- Zsh tab completion for commands and project names
 - Pass a project name directly to skip the menu
 - Open projects in your preferred app/editor
 - Automatic window title management for VSCode-based editors
@@ -41,6 +42,8 @@ This preserves Cursor's chat history (which is keyed by directory path) while gi
    ```bash
    source <path-to-codequick>/contrib/cq.zsh
    ```
+
+   This also enables tab completion for commands, app aliases, and existing project names (most recently used first), as long as your `~/.zshrc` loads the completion system with `autoload -Uz compinit && compinit`. Sourcing the wrapper before or after `compinit` both work.
 
 3. Optionally, set `CQ_ROOT` in your `~/.zshrc` to change where projects are stored (defaults to `~/aa/code/_cq`):
 
@@ -121,7 +124,7 @@ cq open <agy|cc|cur|fx|vsc|zed> [project-name]
 Opens an interactive fzf menu and launches the selected project in the specified app/editor:
 
 - `agy` - Antigravity
-- `cc` - Claude Code desktop app (see below)
+- `cc` - Claude Code (see below)
 - `cur` - Cursor
 - `fx` - Finder (macOS file explorer)
 - `vsc` - Visual Studio Code

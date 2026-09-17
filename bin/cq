@@ -20,7 +20,7 @@ OPEN_APPS=(
   cur cursor   # Cursor
   agy agy-ide  # Antigravity
   zed zed      # Zed
-  cc  cc       # Claude Code desktop app (a shell function; handled by the zsh wrapper)
+  cc  cc       # Claude Code (a shell function; handled by the zsh wrapper)
 )
 
 print_err() { echo "\033[31m$*\033[0m" 1>&2; }
@@ -168,6 +168,12 @@ cmd_lookup() {
   record_access "$link_name"
   echo -n "$real_id" | pbcopy
   echo "Copied to clipboard: $real_id"
+}
+
+# Internal command used by the tab completer (contrib/completions/_cq):
+# prints project names, most recently used first.
+cmd__links() {
+  get_sorted_links
 }
 
 # Internal command used by wrapper. Wrapper handles the `cq cd` command.
@@ -382,6 +388,7 @@ main() {
   case "$cmd" in
     ls)        cmd_ls "$@" ;;
     lookup)    cmd_lookup "$@" ;;
+    _links)    cmd__links "$@" ;;
     _cd)       cmd__cd "$@" ;;
     open)      cmd_open "$@" ;;
     _open_cc)  cmd__open_cc "$@" ;;

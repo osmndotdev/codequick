@@ -1,11 +1,22 @@
 # CodeQuick Zsh wrapper
 # Add this to your .zshrc to enable 'cq cd' (changes your shell's working
-# directory) and 'cq open cc' (calls your 'cc' shell function):
+# directory), 'cq open cc' (calls your 'cc' shell function), and tab
+# completion:
 # source <path-to-codequick>/contrib/cq.zsh
 
 # Resolve the cq binary relative to this file's location ($0 is the sourced
 # file's path thanks to zsh's default FUNCTION_ARGZERO option).
 typeset -g _CQ_BIN="${0:A:h:h}/bin/cq"
+
+# Tab completion (contrib/completions/_cq). Sourcing this file before
+# compinit is enough: compinit picks up #compdef files from fpath. If compinit
+# has already run, register the completer directly instead.
+typeset -gU fpath
+fpath=("${0:A:h}/completions" $fpath)
+if (( $+functions[compdef] )); then
+  autoload -Uz _cq
+  compdef _cq cq
+fi
 
 cq() {
   # cd and mkcd must change the calling shell's directory, which a

@@ -108,6 +108,13 @@ assert_status "rename with JSONC settings still succeeds" $? 0
 assert_eq "JSONC settings left untouched" "$(cat "$copy_real/.vscode/settings.json")" "$before"
 assert_gone "no tmp file left behind" "$copy_real/.vscode/settings.json.tmp"
 
+# -- _links (feeds tab completion): newest access first, no fzf --
+"$CQ" _cd cd-target >/dev/null 2>&1   # bump cd-target to the top
+assert_eq "_links lists projects, most recently used first" \
+  "$("$CQ" _links 2>/dev/null | head -1)" "cd-target"
+assert_eq "_links lists every project" "$("$CQ" _links 2>/dev/null | sort | tr '\n' ' ')" \
+  "cd-target my-test-project renamed-again "
+
 # -- direct-name selection (must never reach the fzf stub) --
 "$CQ" ls my-test-project >/dev/null 2>&1
 assert_status "ls with exact name" $? 0

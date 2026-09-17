@@ -48,7 +48,8 @@ Symlinks use **relative paths** (`../reals/<id>`) to keep the structure portable
 | File             | Purpose                                             |
 | ---------------- | --------------------------------------------------- |
 | `bin/cq`         | Main executable (Zsh script)                        |
-| `contrib/cq.zsh` | Zsh wrapper for shell integration (`cq cd`, `cq open cc`) |
+| `contrib/cq.zsh` | Zsh wrapper for shell integration (`cq cd`, `cq open cc`) and completion setup |
+| `contrib/completions/_cq` | Zsh tab completion (`#compdef cq`), loaded via `fpath` by the wrapper |
 | `test/smoke.zsh` | Smoke test (sandboxed CQ_ROOT, stubbed deps)        |
 | `README.md`      | User documentation                                  |
 
@@ -63,6 +64,10 @@ Every command that operates on an existing project (`ls`, `lookup`, `cd`, `open`
 The `cq cd` and `cq mkcd` commands need to change the **calling shell's** working directory. Since a subprocess cannot change its parent's working directory, the wrapper function intercepts them, calls the internal `cq _cd`/`cq _mkcd` command to get the path, then uses `builtin cd` to change directories within the same shell process.
 
 `cq open cc` follows the same pattern for a different reason: Claude Code is launched by a user-defined `cc` shell function (not an executable), which a subprocess can't see. The wrapper calls the internal `cq _open_cc` to select the project and get its real path, then calls `cc "$real_path"` in the same shell. Running `open cc` against `bin/cq` directly is a usage error.
+
+### Tab Completion
+
+`contrib/completions/_cq` is a standard `#compdef` file. The wrapper prepends `contrib/completions` to `fpath`, so `compinit` picks it up when it runs after the wrapper is sourced (the common `.zshrc` order); if `compdef` already exists when the wrapper is sourced, it registers the completer directly. Project names come from the hidden `cq _links` command (`get_sorted_links`, most recently used first) and are added as an unsorted group so completion menus keep that order. Commands, app aliases, and their descriptions are duplicated in the completer, so keep them in sync with `bin/cq`.
 
 ### Unique Directory Names
 
@@ -90,6 +95,7 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 
 | Command  | Internal Function       | Description                                                                       |
 | -------- | ----------------------- | --------------------------------------------------------------------------------- |
+| `_links` | `cmd__links`            | Hidden; prints project names for the tab completer                                |
 | `ls`     | `cmd_ls`                | Interactive fzf selection, copies name to clipboard                               |
 | `lookup` | `cmd_lookup`            | Interactive fzf selection, copies real dir name to clipboard                      |
 | `cd`     | `cmd__cd` (via wrapper) | Interactive fzf selection, changes directory                                      |
@@ -109,9 +115,10 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 1. Create a new function `cmd_<name>()` in `bin/cq`
 2. Add the command to the `case` statement in `main()`
 3. Add help text to the heredoc in the help case
-4. If the command needs shell integration (like `cd`), update `contrib/cq.zsh`
+4. Add the command (and its argument spec) to `contrib/completions/_cq`
+5. If the command needs shell integration (like `cd`), update `contrib/cq.zsh`
 
-To support a new app/editor in `cq open`, add a single entry to the `OPEN_APPS` table at the top of `bin/cq` — usage, help, and error messages derive from it (also document the alias in README). The `cc` entry is the exception: it is listed there for usage/help only and is dispatched by the wrapper.
+To support a new app/editor in `cq open`, add an entry to the `OPEN_APPS` table at the top of `bin/cq` — usage, help, and error messages derive from it — and mirror it in `_cq_apps` in `contrib/completions/_cq` (also document the alias in README). The `cc` entry is the exception: it is listed there for usage/help only and is dispatched by the wrapper.
 
 ### Testing Changes
 

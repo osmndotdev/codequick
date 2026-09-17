@@ -1,0 +1,77 @@
+#compdef cq
+# shellcheck disable=all
+
+# Zsh completion for CodeQuick. Loaded via fpath by contrib/cq.zsh.
+
+# Existing project names, most recently used first (unsorted group keeps
+# that order in the menu).
+_cq_projects() {
+  local -a projects
+  projects=(${(f)"$(${_CQ_BIN:-cq} _links 2>/dev/null)"})
+  _wanted -V projects expl 'project' compadd -a projects
+}
+
+_cq_apps() {
+  local -a apps
+  apps=(
+    'agy:Antigravity'
+    'cc:Claude Code'
+    'cur:Cursor'
+    'fx:Finder'
+    'vsc:Visual Studio Code'
+    'zed:Zed'
+  )
+  _describe -t apps 'app/editor' apps
+}
+
+_cq() {
+  local curcontext="$curcontext" state line ret=1
+  typeset -A opt_args
+
+  _arguments -C \
+    '1: :->command' \
+    '*:: :->args' && ret=0
+
+  case $state in
+    command)
+      local -a commands
+      commands=(
+        'help:Show help message'
+        'ls:List projects, copy selection to clipboard'
+        'lookup:List real dir <-> project name mapping, copy selected real dir name'
+        'cd:List projects, cd into selected one'
+        'open:List projects, open selected one in app/editor'
+        'mk:Create new project, print its path'
+        'mkcd:Create new project and cd into it'
+        'cp:Create a copy of an existing project'
+        'rename:Rename a project'
+        'path:Print absolute path of selected project'
+        'rm:Move selected project to Trash'
+      )
+      _describe -t commands 'cq command' commands && ret=0
+      ;;
+    args)
+      case $line[1] in
+        ls|lookup|cd|path|rm)
+          _arguments '1:project:_cq_projects' && ret=0
+          ;;
+        open)
+          _arguments '1:app/editor:_cq_apps' '2:project:_cq_projects' && ret=0
+          ;;
+        cp)
+          _arguments '1:project:_cq_projects' '2:new project suffix: ' && ret=0
+          ;;
+        rename)
+          _arguments '1:project:_cq_projects' '2:new project name: ' && ret=0
+          ;;
+        mk|mkcd)
+          _arguments '1:new project name: ' && ret=0
+          ;;
+      esac
+      ;;
+  esac
+
+  return ret
+}
+
+_cq "$@"
