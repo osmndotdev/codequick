@@ -75,8 +75,8 @@ assert_exists "_mkcd creates link" "$CQ_ROOT/links/cd-target"
 assert_status "_mkcd missing arg rejected" $? 2
 
 # -- path --
-"$CQ" path nonexistent >/dev/null 2>&1
-assert_status "path nonexistent rejected" $? 1
+"$CQ" path a b >/dev/null 2>&1
+assert_status "path usage error" $? 2
 
 # -- cp --
 echo marker > "$real/marker.txt"
@@ -133,10 +133,21 @@ assert_status "wrapper open cc without cc function rejected" $? 1
 
 "$CQ" ls a b >/dev/null 2>&1
 assert_status "ls usage error" $? 2
+"$CQ" open vsc a b >/dev/null 2>&1
+assert_status "open usage error" $? 2
 
-# A non-matching name falls through to fzf (stub exits 130 -> command fails)
+# A non-matching or missing name falls through to fzf (stub exits 130 ->
+# command fails)
 "$CQ" _cd zzz-no-match >/dev/null 2>&1
 assert_status "_cd non-matching name falls through to fzf" $? 1
+"$CQ" path zzz-no-match >/dev/null 2>&1
+assert_status "path non-matching name falls through to fzf" $? 1
+"$CQ" path >/dev/null 2>&1
+assert_status "path without name falls through to fzf" $? 1
+"$CQ" rm zzz-no-match >/dev/null 2>&1
+assert_status "rm non-matching name falls through to fzf" $? 1
+"$CQ" rm >/dev/null 2>&1
+assert_status "rm without name falls through to fzf" $? 1
 
 # -- rm --
 echo n | "$CQ" rm renamed-again >/dev/null 2>&1
@@ -150,8 +161,8 @@ assert_gone "rm removes link" "$CQ_ROOT/links/renamed-again"
 assert_gone "rm removes real dir" "$copy_real"
 assert_exists "rm trashes real dir" "$TRASHED/$(basename "$copy_real")"
 assert_exists "rm trashes link" "$TRASHED/renamed-again"
-"$CQ" rm nonexistent >/dev/null 2>&1
-assert_status "rm nonexistent rejected" $? 1
+"$CQ" rm a b >/dev/null 2>&1
+assert_status "rm usage error" $? 2
 
 print ""
 print "passed: $PASS, failed: $FAIL"

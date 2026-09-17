@@ -50,7 +50,7 @@ This preserves Cursor's chat history (which is keyed by directory path) while gi
 
 ## Usage
 
-For `ls`, `lookup`, `cd`, and `open`, the optional `project-name` argument skips the fzf menu when it matches a project exactly; otherwise it prefills the fuzzy search (auto-selecting when only one project matches).
+For `ls`, `lookup`, `cd`, `open`, `path`, and `rm`, the `project-name` argument is optional: leave it out to pick from the fzf menu, pass an exact project name to skip the menu, or pass a partial name to prefill the fuzzy search (auto-selecting when only one project matches). `mk`, `mkcd`, `cp`, and `rename` take a new name, so they always require their arguments.
 
 ### Create a new project
 
@@ -142,18 +142,18 @@ _Requires the zsh wrapper to be loaded._
 ### Get project path
 
 ```bash
-cq path my-project
+cq path [project-name]
 ```
 
-Prints the absolute path of the real directory for `my-project`. Useful for integrating with other CLI tools.
+Prints the absolute path of the real directory for the selected project. Useful for integrating with other CLI tools (pass the exact name to keep it non-interactive). Unlike the other selection commands, `path` does not bump the project in the last-used ordering.
 
 ### Remove a project
 
 ```bash
-cq rm my-project
+cq rm [project-name]
 ```
 
-Asks for confirmation, then moves both the symlink and the real directory to the macOS Trash.
+Opens an interactive fzf menu (or takes the given project), asks for confirmation, then moves both the symlink and the real directory to the macOS Trash.
 
 ## Development
 

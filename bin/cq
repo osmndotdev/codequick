@@ -196,6 +196,10 @@ cmd_open() {
     print_err "Unknown app/editor: $app. Valid options: $apps"
     exit 2
   fi
+  if [[ $# -gt 2 ]]; then
+    print_err "Usage: cq open <$apps> [PROJECT_NAME]"
+    exit 2
+  fi
   # `cc` is a shell function, not an executable, so only the wrapper can call it.
   if [[ "$app" == cc ]]; then
     print_err "cq open cc requires the zsh wrapper (contrib/cq.zsh) and a 'cc' shell function"
@@ -231,12 +235,23 @@ cmd__open_cc() {
   get_real_path_from_link_name "$selected" || { print_err "Failed to resolve real path"; return 1; }
 }
 
+# Deliberately does not record_access: path is a query meant for scripts,
+# and bumping the link on every call would reorder the menus.
 cmd_path() {
-  local link_name="$1"
-  require_arg "$link_name" "Missing project name. Usage: cq path <PROJECT_NAME>"
-  if ! link_exists "$link_name"; then print_err "Link not found: $link_name"; exit 1; fi
+  if [[ $# -gt 1 ]]; then
+    print_err "Usage: cq path [PROJECT_NAME]"
+    exit 2
+  fi
 
-  get_real_path_from_link_name "$link_name"
+  local selected
+  selected=$(select_link "Print path of project: " "${1:-}") || return 1
+  # stdout is the data channel here, so user-facing messages go to stderr.
+  if [[ -z "$selected" ]]; then
+    echo "Nothing selected" >&2
+    return 0
+  fi
+
+  get_real_path_from_link_name "$selected" || { print_err "Failed to resolve real path"; return 1; }
 }
 
 # Shared by mk and _mkcd. Prints the sanitized link name on stdout;
@@ -325,10 +340,17 @@ cmd_rename() {
 }
 
 cmd_rm() {
-  local link_name="$1"
-  require_arg "$link_name" "Missing project name. Usage: cq rm <PROJECT_NAME>"
+  if [[ $# -gt 1 ]]; then
+    print_err "Usage: cq rm [PROJECT_NAME]"
+    exit 2
+  fi
 
-  if ! link_exists "$link_name"; then print_err "Link not found: $link_name"; exit 1; fi
+  local link_name
+  link_name=$(select_link "Move project to Trash: " "${1:-}") || return 1
+  if [[ -z "$link_name" ]]; then
+    echo "Nothing selected"
+    return 0
+  fi
 
   local real_id real_path
   real_id=$(get_real_id_from_link_name "$link_name") || { print_err "Failed to resolve real dir"; exit 1; }
@@ -384,8 +406,8 @@ Commands:
   mkcd <PROJECT_NAME>                             Create new project and cd into it
   cp <OLD_PROJECT_NAME> <NEW_PROJECT_SUFFIX>      Create a copy of an existing project
   rename <OLD_PROJECT_NAME> <NEW_PROJECT_NAME>    Rename a project
-  path <PROJECT_NAME>                             Print absolute path of project
-  rm <PROJECT_NAME>                               Move project to Trash
+  path [PROJECT_NAME]                             Print absolute path of selected project
+  rm [PROJECT_NAME]                               Move selected project to Trash
 
 An optional PROJECT_NAME that matches exactly skips the menu; otherwise it
 prefills the fuzzy search (auto-selecting when only one project matches).

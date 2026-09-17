@@ -56,7 +56,7 @@ Symlinks use **relative paths** (`../reals/<id>`) to keep the structure portable
 
 ### Direct Selection vs. fzf
 
-The selection commands (`ls`, `lookup`, `cd`, `open`) accept an optional project name, handled by the shared `select_link` helper: an exact match skips fzf entirely; otherwise the name prefills fzf's query with `--select-1` (auto-select when only one project matches).
+Every command that operates on an existing project (`ls`, `lookup`, `cd`, `open`, `path`, `rm`) accepts an optional project name, handled by the shared `select_link` helper: no name opens fzf; an exact match skips fzf entirely; otherwise the name prefills fzf's query with `--select-1` (auto-select when only one project matches). `lookup` reimplements the same flow because its fzf rows have a different format. Commands that take a new name (`mk`, `mkcd`, `cp`, `rename`) require their arguments via `require_arg`. `path` is the one selection command that does not call `record_access`, since scripts call it repeatedly and bumping the link would reorder the menus.
 
 ### Why the Zsh Wrapper Exists
 
@@ -99,8 +99,8 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 | `mkcd`   | `cmd__mkcd` (via wrapper) | Creates new project, changes directory into it                                 |
 | `cp`     | `cmd_cp`                | Copies project with suffix (creates `<name>__<suffix>`)                           |
 | `rename` | `cmd_rename`            | Renames symlink only, updates window title                                        |
-| `path`   | `cmd_path`              | Outputs real path for a project                                                   |
-| `rm`     | `cmd_rm`                | Moves project and symlink to Trash (after y/N confirmation)                       |
+| `path`   | `cmd_path`              | Interactive fzf selection, outputs real path (does not record access)             |
+| `rm`     | `cmd_rm`                | Interactive fzf selection, moves project and symlink to Trash (after y/N confirmation) |
 
 ## Development Notes
 
@@ -121,7 +121,7 @@ Don't test changes against the user's real projects. Run `zsh test/smoke.zsh` â€
 
 - Functions are prefixed with `cmd_` for commands
 - Helper functions are lowercase with underscores
-- Use `require_arg` for argument validation
+- Use `require_arg` for required arguments; use `select_link` for an optional existing-project argument
 - Use `link_exists` before operations that need an existing link
 - Fail early on missing args with concise error messages
 
