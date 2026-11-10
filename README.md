@@ -150,6 +150,14 @@ cq path [project-name]
 
 Prints the absolute path of the real directory for the selected project. Useful for integrating with other CLI tools (pass the exact name to keep it non-interactive). Unlike the other selection commands, `path` does not bump the project in the last-used ordering.
 
+### Get project name from its ID
+
+```bash
+cq name <project-id>
+```
+
+Prints the current name of the project whose real directory is `<project-id>` (e.g. `cq-a1b2c3d4`) — the reverse of `lookup`. It is meant for scripts: it never opens a menu, prints only the name, and exits with status 1 if no project has that ID. For example, from anywhere directly inside a project's real directory, `cq name "${PWD:t}"` gives the project's name. Like `path`, it does not bump the project in the last-used ordering.
+
 ### Remove a project
 
 ```bash

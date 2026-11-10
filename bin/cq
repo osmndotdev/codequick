@@ -260,6 +260,33 @@ cmd_path() {
   get_real_path_from_link_name "$selected" || { print_err "Failed to resolve real path"; return 1; }
 }
 
+# The reverse of lookup, meant for scripts: real dir ID (cq-XXXXXXXX) ->
+# current project name. Never interactive (no fzf, exact ID only) and, like
+# path, does not record_access. Reads link targets with the zstat builtin
+# rather than readlink so a call costs no fork per project.
+cmd_name() {
+  if [[ $# -gt 1 ]]; then
+    print_err "Usage: cq name <PROJECT_ID>"
+    exit 2
+  fi
+  local real_id="${1:-}"
+  require_arg "$real_id" "Missing project ID. Usage: cq name <PROJECT_ID>"
+
+  zmodload -F zsh/stat b:zstat
+  local link
+  local -a target
+  for link in "$LINKS_DIR"/*(N@); do
+    zstat -A target +link -- "$link" 2>/dev/null || continue
+    if [[ "${target[1]:t}" == "$real_id" ]]; then
+      echo "${link:t}"
+      return 0
+    fi
+  done
+
+  print_err "No project found for ID: $real_id"
+  exit 1
+}
+
 # Shared by mk and _mkcd. Prints the sanitized link name on stdout;
 # all diagnostics go to stderr.
 create_project() {
@@ -397,6 +424,7 @@ main() {
     cp)        cmd_cp "$@" ;;
     rename)    cmd_rename "$@" ;;
     path)      cmd_path "$@" ;;
+    name)      cmd_name "$@" ;;
     rm)        cmd_rm "$@" ;;
     ""|help|-h|--help)
       local -a app_keys; app_keys=(${(ok)OPEN_APPS})
@@ -414,7 +442,8 @@ Commands:
   cp <OLD_PROJECT_NAME> <NEW_PROJECT_SUFFIX>      Create a copy of an existing project
   rename <OLD_PROJECT_NAME> <NEW_PROJECT_NAME>    Rename a project
   path [PROJECT_NAME]                             Print absolute path of selected project
-  rm [PROJECT_NAME]                               Move selected project to Trash
+  name <PROJECT_ID>                               Print current name of the project with real dir ID cq-XXXXXXXX
+  rm [PROJECT_NAME]                              Move selected project to Trash
 
 An optional PROJECT_NAME that matches exactly skips the menu; otherwise it
 prefills the fuzzy search (auto-selecting when only one project matches).

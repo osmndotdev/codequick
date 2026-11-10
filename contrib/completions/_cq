@@ -64,6 +64,7 @@ _cq() {
         'cp:Create a copy of an existing project'
         'rename:Rename a project'
         'path:Print absolute path of selected project'
+        'name:Print current name of the project with a given real dir ID'
         'rm:Move selected project to Trash'
       )
       _describe -t commands 'cq command' commands && ret=0
@@ -81,6 +82,9 @@ _cq() {
           ;;
         rename)
           _arguments '1:project:_cq_projects' '2:new project name:_cq_new_name' && ret=0
+          ;;
+        name)
+          _arguments '1:project ID (cq-XXXXXXXX): ' && ret=0
           ;;
         mk|mkcd)
           _arguments '1:new project name:_cq_new_name' && ret=0

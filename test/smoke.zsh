@@ -100,6 +100,21 @@ assert_eq "rename updates window title" \
 "$CQ" rename renamed-proj my-test-project >/dev/null 2>&1
 assert_status "rename onto existing name rejected" $? 1
 
+# -- name (real dir ID -> current project name; never interactive) --
+name_out=$("$CQ" name "${real:t}" 2>/dev/null)
+assert_status "name" $? 0
+assert_eq "name prints project name" "$name_out" "my-test-project"
+assert_eq "name follows rename" "$("$CQ" name "${copy_real:t}" 2>/dev/null)" "renamed-proj"
+name_out=$("$CQ" name cq-nosuchid 2>/dev/null)
+assert_status "name unknown ID rejected (no fzf fallback)" $? 1
+assert_eq "name unknown ID prints nothing on stdout" "$name_out" ""
+"$CQ" name my-test-project >/dev/null 2>&1
+assert_status "name does not accept a project name" $? 1
+"$CQ" name >/dev/null 2>&1
+assert_status "name missing arg rejected" $? 2
+"$CQ" name a b >/dev/null 2>&1
+assert_status "name usage error" $? 2
+
 # -- JSONC settings degrade gracefully --
 print '{\n  // comment\n  "window.title": "renamed-proj"\n}' > "$copy_real/.vscode/settings.json"
 before=$(cat "$copy_real/.vscode/settings.json")

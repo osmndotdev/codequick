@@ -59,6 +59,8 @@ Symlinks use **relative paths** (`../reals/<id>`) to keep the structure portable
 
 Every command that operates on an existing project (`ls`, `lookup`, `cd`, `open`, `path`, `rm`) accepts an optional project name, handled by the shared `select_link` helper: no name opens fzf; an exact match skips fzf entirely; otherwise the name prefills fzf's query with `--select-1` (auto-select when only one project matches). `lookup` reimplements the same flow because its fzf rows have a different format. Commands that take a new name (`mk`, `mkcd`, `cp`, `rename`) require their arguments via `require_arg`. `path` is the one selection command that does not call `record_access`, since scripts call it repeatedly and bumping the link would reorder the menus.
 
+`name` is the reverse mapping (real dir ID → project name) and is built for command substitution, so it deliberately stays out of this flow: it requires an exact ID, never opens fzf, prints only the name on stdout, exits 1 when no link points at that ID, and does not call `record_access`. It reads link targets with the `zstat` builtin (`zsh/stat`) instead of `readlink` to avoid a fork per project.
+
 ### Why the Zsh Wrapper Exists
 
 The `cq cd` and `cq mkcd` commands need to change the **calling shell's** working directory. Since a subprocess cannot change its parent's working directory, the wrapper function intercepts them, calls the internal `cq _cd`/`cq _mkcd` command to get the path, then uses `builtin cd` to change directories within the same shell process.
@@ -106,6 +108,7 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 | `cp`     | `cmd_cp`                | Copies project with suffix (creates `<name>__<suffix>`)                           |
 | `rename` | `cmd_rename`            | Renames symlink only, updates window title                                        |
 | `path`   | `cmd_path`              | Interactive fzf selection, outputs real path (does not record access)             |
+| `name`   | `cmd_name`              | Non-interactive; takes a real dir ID (`cq-XXXXXXXX`), outputs the project name (does not record access) |
 | `rm`     | `cmd_rm`                | Interactive fzf selection, moves project and symlink to Trash (after y/N confirmation) |
 
 ## Development Notes
