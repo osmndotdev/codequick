@@ -43,7 +43,7 @@ This preserves Cursor's chat history (which is keyed by directory path) while gi
    source <path-to-codequick>/contrib/cq.zsh
    ```
 
-   This also enables tab completion for commands, app aliases, and existing project names (most recently used first), as long as your `~/.zshrc` loads the completion system with `autoload -Uz compinit && compinit`. Sourcing the wrapper before or after `compinit` both work.
+   This also enables tab completion for commands, app aliases, and existing project names (most recently used first), as long as your `~/.zshrc` loads the completion system with `autoload -Uz compinit && compinit`. Sourcing the wrapper before or after `compinit` both work. Arguments that take a *new* project name (`mk`, `mkcd`, and the new name for `rename`) also complete existing names, without a trailing space, so you can add a prefix or suffix to one; using an existing name unchanged fails with "already exists".
 
 3. Optionally, set `CQ_ROOT` in your `~/.zshrc` to change where projects are stored (defaults to `~/aa/code/_cq`):
 

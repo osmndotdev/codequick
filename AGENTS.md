@@ -67,7 +67,7 @@ The `cq cd` and `cq mkcd` commands need to change the **calling shell's** workin
 
 ### Tab Completion
 
-`contrib/completions/_cq` is a standard `#compdef` file. The wrapper prepends `contrib/completions` to `fpath`, so `compinit` picks it up when it runs after the wrapper is sourced (the common `.zshrc` order); if `compdef` already exists when the wrapper is sourced, it registers the completer directly. Project names come from the hidden `cq _links` command (`get_sorted_links`, most recently used first) and are added as an unsorted group so completion menus keep that order. Commands, app aliases, and their descriptions are duplicated in the completer, so keep them in sync with `bin/cq`.
+`contrib/completions/_cq` is a standard `#compdef` file. The wrapper prepends `contrib/completions` to `fpath`, so `compinit` picks it up when it runs after the wrapper is sourced (the common `.zshrc` order); if `compdef` already exists when the wrapper is sourced, it registers the completer directly. Project names come from the hidden `cq _links` command (`get_sorted_links`, most recently used first) and are added as an unsorted group so completion menus keep that order. Arguments that take a *new* project name (`mk`, `mkcd`, `rename`'s second argument) use `_cq_new_name`, which offers existing names as editable starting points (for adding a prefix/suffix) with no trailing space; `bin/cq` rejects an unchanged existing name ("already exists"). Don't add a `_message -e` hint there: its dummy match stops zsh from inserting the common prefix or a unique match. Commands, app aliases, and their descriptions are duplicated in the completer, so keep them in sync with `bin/cq`.
 
 ### Unique Directory Names
 
