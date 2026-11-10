@@ -3,13 +3,30 @@
 # Without this, the script continues even if a command fails. With this, the script stops at the first command that fails.
 set -e
 
-# Base directories (override the root with the CQ_ROOT environment variable)
-ROOT_DIR="${CQ_ROOT:-$HOME/aa/code/_cq}"
+print_err() { echo "\033[31m$*\033[0m" 1>&2; }
+
+# Projects live under $CQ_ROOT. There is deliberately no default: it must be
+# set explicitly, and everything except the help text refuses to run without
+# it.
+case "${1:-}" in
+  ""|help|-h|--help) ;;
+  *)
+    if [[ -z "${CQ_ROOT:-}" ]]; then
+      print_err "CQ_ROOT is not set. Point it at the directory that should hold your projects, e.g. in ~/.zshrc: export CQ_ROOT=\"\$HOME/projects\""
+      exit 2
+    fi
+    ;;
+esac
+
+# Base directories
+ROOT_DIR="${CQ_ROOT:-}"
 REALS_DIR="$ROOT_DIR/reals"
 LINKS_DIR="$ROOT_DIR/links"
 
-# Ensure base directories exist
-mkdir -p "$REALS_DIR" "$LINKS_DIR"
+# Ensure base directories exist (skipped for help, which works without CQ_ROOT)
+if [[ -n "$ROOT_DIR" ]]; then
+  mkdir -p "$REALS_DIR" "$LINKS_DIR"
+fi
 
 # App/editor aliases for `cq open`. To support a new app, just add it here;
 # usage, help, and error messages derive from this table.
@@ -22,8 +39,6 @@ OPEN_APPS=(
   zed zed      # Zed
   cc  cc       # Claude Code (a shell function; handled by the zsh wrapper)
 )
-
-print_err() { echo "\033[31m$*\033[0m" 1>&2; }
 
 require_arg() {
   local got="$1"; local msg="$2"
@@ -449,6 +464,8 @@ An optional PROJECT_NAME that matches exactly skips the menu; otherwise it
 prefills the fuzzy search (auto-selecting when only one project matches).
 The cd, mkcd, and open cc commands require the zsh wrapper (contrib/cq.zsh);
 open cc also needs a 'cc <dir>' shell function that opens Claude Code.
+
+Projects are stored under \$CQ_ROOT, which must be set (there is no default).
 EOF
       ;;
     *) print_err "Unknown command: $cmd"; exit 2 ;;

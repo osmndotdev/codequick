@@ -20,12 +20,14 @@ Secondary benefits:
 ### Directory Structure
 
 ```
-$CQ_ROOT/            # Defaults to ~/aa/code/_cq
+$CQ_ROOT/            # Required environment variable; no default
 ├── reals/           # Actual project directories with unique IDs (e.g., cq-Ab3Xf9G2)
 └── links/           # Symlinks with human-readable names pointing to reals/
 ```
 
 Symlinks use **relative paths** (`../reals/<id>`) to keep the structure portable.
+
+`CQ_ROOT` must be set explicitly. `bin/cq` checks it before anything else and exits 2 when it is unset or empty, without touching the filesystem; only the help text works without it. Don't reintroduce a fallback location.
 
 ### Key Design Decisions
 
@@ -88,7 +90,7 @@ Created with `mktemp -d "$REALS_DIR/cq-XXXXXXXX"` which generates 8 random alpha
 - Script uses `set -e` to exit on first error
 - Errors are printed in red to stderr via `print_err`
 - Exit code 1: Operational errors (e.g., link not found, real dir missing) and cancelled fzf selection (silent)
-- Exit code 2: Usage errors (e.g., missing arguments, empty sanitized name) — always via `print_err` + `exit 2`
+- Exit code 2: Usage errors (e.g., missing arguments, empty sanitized name, `CQ_ROOT` not set) — always via `print_err` + `exit 2`
 - An empty fzf selection prints "Nothing selected" and returns 0 (not an error)
 - Prefer explicit `if` blocks over `[[ ... ]] && ... && ...` chains, which behave surprisingly under `set -e`
 - `cq rm` should error clearly if either the link or real dir is missing or out of sync

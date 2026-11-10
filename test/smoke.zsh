@@ -186,6 +186,24 @@ assert_exists "rm trashes link" "$TRASHED/renamed-again"
 "$CQ" rm a b >/dev/null 2>&1
 assert_status "rm usage error" $? 2
 
+# -- CQ_ROOT is required --
+# Run from an empty directory so a regression that falls back to a relative
+# or default root would show up as stray files there.
+NOROOT_CWD="$SANDBOX/noroot-cwd"
+mkdir -p "$NOROOT_CWD"
+noroot_err=$(cd "$NOROOT_CWD" && env -u CQ_ROOT "$CQ" mk no-root-project 2>&1 >/dev/null)
+assert_status "unset CQ_ROOT is rejected" $? 2
+if [[ "$noroot_err" == *CQ_ROOT* ]]; then pass; else fail "unset CQ_ROOT error names the variable: got '$noroot_err'"; fi
+(cd "$NOROOT_CWD" && CQ_ROOT= "$CQ" _links >/dev/null 2>&1)
+assert_status "empty CQ_ROOT is rejected" $? 2
+(cd "$NOROOT_CWD" && env -u CQ_ROOT "$CQ" bogus-command >/dev/null 2>&1)
+assert_status "unset CQ_ROOT is rejected before dispatch" $? 2
+assert_eq "no CQ_ROOT creates nothing" "$(ls -A "$NOROOT_CWD")" ""
+help_out=$(cd "$NOROOT_CWD" && env -u CQ_ROOT "$CQ" help 2>/dev/null)
+assert_status "help works without CQ_ROOT" $? 0
+if [[ "$help_out" == *CQ_ROOT* ]]; then pass; else fail "help mentions CQ_ROOT"; fi
+assert_eq "help without CQ_ROOT creates nothing" "$(ls -A "$NOROOT_CWD")" ""
+
 print ""
 print "passed: $PASS, failed: $FAIL"
 rm -rf "$SANDBOX"

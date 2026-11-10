@@ -21,7 +21,7 @@ CodeQuick is a command-line tool for managing code project directories. It creat
 ## Implementation notes
 
 - This will be implemented with shell scripting. Primary target is Zsh. Bash compatibility would be nice to have.
-- "/Users/osman/aa/code/_cq" contains the "reals" and "links" directories.
+- The directory named by the `CQ_ROOT` environment variable contains the "reals" and "links" directories.
 - macOS has a builtin `trash` command now.
 - `rm` should move both the link and the real dir to Trash atomically and error clearly if either side is missing or out of sync.
 - For unique real directory names we'll make use of `mktemp`. The randomness will be prefixed with "cq-".

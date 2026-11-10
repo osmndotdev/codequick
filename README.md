@@ -17,7 +17,7 @@ Quick project manager for macOS/Zsh that helps you manage and navigate between p
 
 ## How it Works
 
-Projects are stored in `~/aa/code/_cq/` by default (override with the `CQ_ROOT` environment variable):
+Projects are stored in the directory named by the `CQ_ROOT` environment variable, which you must set (there is no default):
 
 - `reals/` - Contains actual project directories with unique IDs (e.g., `cq-Ab3Xf9G2`)
 - `links/` - Contains symlinks with human-readable names pointing to real directories
@@ -37,19 +37,21 @@ This preserves Cursor's chat history (which is keyed by directory path) while gi
    - `fzf` (install with `brew install fzf`)
    - `jq` (install with `brew install jq`)
 
-2. Source the zsh wrapper in your `~/.zshrc`:
+2. Set `CQ_ROOT` in your `~/.zshrc` to the directory where projects should be stored. This is required: there is no default location, and `cq` refuses to run without it (only `cq help` works).
+
+   ```bash
+   export CQ_ROOT="$HOME/projects"
+   ```
+
+   CodeQuick creates the `reals/` and `links/` directories inside it on first use.
+
+3. Source the zsh wrapper in your `~/.zshrc`:
 
    ```bash
    source <path-to-codequick>/contrib/cq.zsh
    ```
 
    This also enables tab completion for commands, app aliases, and existing project names (most recently used first), as long as your `~/.zshrc` loads the completion system with `autoload -Uz compinit && compinit`. Sourcing the wrapper before or after `compinit` both work. Arguments that take a *new* project name (`mk`, `mkcd`, and the new name for `rename`) also complete existing names, without a trailing space, so you can add a prefix or suffix to one; using an existing name unchanged fails with "already exists".
-
-3. Optionally, set `CQ_ROOT` in your `~/.zshrc` to change where projects are stored (defaults to `~/aa/code/_cq`):
-
-   ```bash
-   export CQ_ROOT="$HOME/somewhere/else"
-   ```
 
 ## Usage
 
